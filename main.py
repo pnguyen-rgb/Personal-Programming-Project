@@ -7,7 +7,6 @@ from wordfreq import zipf_frequency
 import os
 colorama.init()
 
-
 CYAN = Fore.CYAN
 YELLOW = Fore.YELLOW
 WHITE = Fore.WHITE
@@ -58,6 +57,36 @@ def display_grid(grid):
         print(" ".join(row))
     print()
 
+def check_word_on_grid(word, grid):
+    for i in range(len(word)):
+        letter = word[i]
+        next_letter = word[i+1]
+        positions = search_grid(letter, grid)
+        if positions == []:
+            return False
+        for position in positions:
+            search_adjacent(grid, position, next_letter)
+
+def search_grid(letter, grid):
+    letter_positions = []
+    for i, row in enumerate(grid):
+        for j, l in enumerate(row):
+            if l == letter:
+                position = i, j
+                letter_positions.append(position)
+
+    return letter_positions
+
+def search_adjacent(grid, pos, next_letter):
+    r, c = pos[0], pos[1]
+    left = grid[r][c-1]
+    right = grid[r][c+1]
+    up = grid[r-1][c]
+    down = grid[r+1][c]
+    if left == next_letter:
+        newpos = r, c-1
+                
+
 def start_game():
     selected_grid = select_grid()
     theme = selected_grid.stem
@@ -92,11 +121,13 @@ def start_game():
                     print_coloured_text(YELLOW, "\nSprangram!")
                     print_coloured_text(WHITE, "", True)
             else:
-                if check_word_valid(word):
-                    print("Word is valid")
-                    words_found.append(word)
-                else:
-                    print("That doesn't look like a valid English word. Try again.")
+                if check_word_on_grid(word, grid):
+
+                    if check_word_valid(word):
+                        print("Word is valid")
+                        words_found.append(word)
+                    else:
+                        print("That doesn't look like a valid English word. Try again.")
 
 
 def load_game(file):
