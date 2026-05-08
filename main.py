@@ -58,46 +58,60 @@ def display_grid(grid):
     print()
 
 def check_word_on_grid(word, grid):
+    visited = []
+    def find_path(current_word, r, c, visited):
+        if len(current_word) == 0:
+            return True
+        
+        adjacents = check_adjacent(grid, (r, c))
+        next_letter = current_word[0]
+        for i, letter in enumerate(adjacents):
+            nr, nc = letter[0], letter[1]
+            if nr != "" and nc != "":
+                if grid[nr][nc] == next_letter and (nr, nc) not in visited:
+                    visited.append((nr, nc))
+                    if find_path(current_word[1:], nr, nc, visited):
+                        return True
+                    visited.remove((nr, nc))
+
+        return False
+    
     for r, row in enumerate(grid):
         for c, letter in enumerate(row):
             if letter == word[0]:
-                adjacents = check_adjacent(grid, (r, c))
-                next_letter = word[1]
-                print(adjacents)
-                if next_letter in adjacents:
-                    word.remove(word[0])
-                    print(word)
-                    print("Found letter", next_letter, "at position", (r, c))
-                else:
-                    continue
+                visited.append((r, c))
+                if find_path(word[1:], r, c, visited):
+                    return True
+                visited.remove((r, c))
+
     return False
 
 def check_adjacent(grid, pos):
     r, c = pos[0], pos[1]
-    left = None
-    right = None
-    up = None
-    down = None
-    top_left = None
-    top_right = None
-    bottom_left = None
-    bottom_right = None
+    left = "", ""
+    right = "", ""
+    up = "", ""
+    down = "", ""
+    top_left = "", ""
+    top_right = "", ""
+    bottom_left = "", ""
+    bottom_right = "", ""
     if c != 0:
-        left = grid[r][c-1]
+        left = (r, c-1)
     if c != len(grid[r]) - 1:
-        right = grid[r][c+1]
+        right = (r, c+1)
     if r != 0:
-        up = grid[r-1][c]
+        up = (r-1, c)
     if r != len(grid) - 1:
-        down = grid[r+1][c]
+        down = (r+1, c)
     if r != 0 and c != 0:
-        top_left = grid[r-1][c-1]
+        top_left = (r-1, c-1)
     if r != 0 and c != len(grid[r]) - 1:
-        top_right = grid[r-1][c+1]
+        top_right = (r-1, c+1)
     if r != len(grid) - 1 and c != 0:
-        bottom_left = grid[r+1][c-1]
+        bottom_left = (r+1, c-1)
     if r != len(grid) - 1 and c != len(grid[r]) - 1:
-        bottom_right = grid[r+1][c+1]
+        bottom_right = (r+1, c+1)
     adjacents = [left, right, up, down, top_left, top_right, bottom_left, bottom_right]
     return adjacents
 
@@ -136,6 +150,7 @@ def start_game():
                     print_coloured_text(WHITE, "", True)
             else:
                 if check_word_on_grid(list(word), grid):
+                    print("Word is on grid")
                     if check_word_valid(word):
                         print("Word is valid")
                         words_found.append(word)
