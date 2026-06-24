@@ -11,6 +11,7 @@ CYAN = Fore.CYAN
 YELLOW = Fore.YELLOW
 WHITE = Fore.WHITE
 BLUE = Fore.BLUE
+GREEN = Fore.GREEN
 RESET = Style.RESET_ALL
 WORDS_REQUIRED_FOR_HINT = 3
 
@@ -59,7 +60,7 @@ def generate_grid(grid_lines):
     return grid
 
 def build_visual_grid(grid, found_paths):
-    """Build a visual representation of the grid with connecting lines"""
+    #Build a visual representation of the grid with connecting lines
     rows = len(grid)
     cols = len(grid[0])
     
@@ -91,60 +92,61 @@ def build_visual_grid(grid, found_paths):
             visual[vr][vc] = color + grid[r][c] + RESET
         
         # Draw lines between consecutive letters
-        for i in range(len(path) - 1):
-            r1, c1 = path[i]
-            r2, c2 = path[i + 1]
-            
-            # Convert to visual coordinates
-            vr1, vc1 = r1 * 2, c1 * 4
-            vr2, vc2 = r2 * 2, c2 * 4
-            
-            # Determine direction and draw appropriate line
-            dr = vr2 - vr1
-            dc = vc2 - vc1
-            
-            if dr == 0 and dc > 0:  # Right (horizontal)
-                for j in range(1, dc):
-                    if j == dc - 1:
-                        visual[vr1][vc1 + j] = color + "-" + RESET
-                    else:
-                        visual[vr1][vc1 + j] = color + "–" + RESET
-            elif dr == 0 and dc < 0:  # Left (horizontal)
-                for j in range(-1, dc, -1):
-                    if j == dc + 1:
-                        visual[vr1][vc1 + j] = color + "-" + RESET
-                    else:
-                        visual[vr1][vc1 + j] = color + "–" + RESET
-            elif dr > 0 and dc == 0:  # Down (vertical)
-                for j in range(1, dr):
-                    visual[vr1 + j][vc1] = color + "|" + RESET
-            elif dr < 0 and dc == 0:  # Up (vertical)
-                for j in range(-1, dr, -1):
-                    visual[vr1 + j][vc1] = color + "|" + RESET
-            elif dr > 0 and dc > 0:  # Down-right diagonal
-                steps = abs(dr)
-                for step in range(1, steps):
-                    vr = vr1 + step
-                    vc = vc1 + step
-                    visual[vr][vc] = color + "\\" + RESET
-            elif dr > 0 and dc < 0:  # Down-left diagonal
-                steps = abs(dr)
-                for step in range(1, steps):
-                    vr = vr1 + step
-                    vc = vc1 - step
-                    visual[vr][vc] = color + "/" + RESET
-            elif dr < 0 and dc > 0:  # Up-right diagonal
-                steps = abs(dr)
-                for step in range(1, steps):
-                    vr = vr1 - step
-                    vc = vc1 + step
-                    visual[vr][vc] = color + "/" + RESET
-            elif dr < 0 and dc < 0:  # Up-left diagonal
-                steps = abs(dr)
-                for step in range(1, steps):
-                    vr = vr1 - step
-                    vc = vc1 - step
-                    visual[vr][vc] = color + "\\" + RESET
+        if color != GREEN:
+            for i in range(len(path) - 1):
+                r1, c1 = path[i]
+                r2, c2 = path[i + 1]
+                
+                # Convert to visual coordinates
+                vr1, vc1 = r1 * 2, c1 * 4
+                vr2, vc2 = r2 * 2, c2 * 4
+                
+                # Determine direction and draw appropriate line
+                dr = vr2 - vr1
+                dc = vc2 - vc1
+                
+                if dr == 0 and dc > 0:  # Right (horizontal)
+                    for j in range(1, dc):
+                        if j == dc - 1:
+                            visual[vr1][vc1 + j] = color + "-" + RESET
+                        else:
+                            visual[vr1][vc1 + j] = color + "–" + RESET
+                elif dr == 0 and dc < 0:  # Left (horizontal)
+                    for j in range(-1, dc, -1):
+                        if j == dc + 1:
+                            visual[vr1][vc1 + j] = color + "-" + RESET
+                        else:
+                            visual[vr1][vc1 + j] = color + "–" + RESET
+                elif dr > 0 and dc == 0:  # Down (vertical)
+                    for j in range(1, dr):
+                        visual[vr1 + j][vc1] = color + "|" + RESET
+                elif dr < 0 and dc == 0:  # Up (vertical)
+                    for j in range(-1, dr, -1):
+                        visual[vr1 + j][vc1] = color + "|" + RESET
+                elif dr > 0 and dc > 0:  # Down-right diagonal
+                    steps = abs(dr)
+                    for step in range(1, steps):
+                        vr = vr1 + step
+                        vc = vc1 + step
+                        visual[vr][vc] = color + "\\" + RESET
+                elif dr > 0 and dc < 0:  # Down-left diagonal
+                    steps = abs(dr)
+                    for step in range(1, steps):
+                        vr = vr1 + step
+                        vc = vc1 - step
+                        visual[vr][vc] = color + "/" + RESET
+                elif dr < 0 and dc > 0:  # Up-right diagonal
+                    steps = abs(dr)
+                    for step in range(1, steps):
+                        vr = vr1 - step
+                        vc = vc1 + step
+                        visual[vr][vc] = color + "/" + RESET
+                elif dr < 0 and dc < 0:  # Up-left diagonal
+                    steps = abs(dr)
+                    for step in range(1, steps):
+                        vr = vr1 - step
+                        vc = vc1 - step
+                        visual[vr][vc] = color + "\\" + RESET
     
     # Convert visual grid to string and clean up extra spaces
     result = []
@@ -249,11 +251,16 @@ def start_game():
                     if word in words_found:
                         sorted_words.remove(word)
                 hint_word = sorted_words[0]
-                print(f"A theme word is {hint_word}. Enter it onto the grid")
+                path = check_word_on_grid(hint_word, grid)
+                if path:
+                    found_paths.append((path, GREEN))
+                display_grid(grid, found_paths)
+                input("Your hint is shown in green. Press enter to continue. ")
+                found_paths.pop()
                 
             else:
                 print("You don't have enough hints!")
-            time.sleep(3)
+                time.sleep(3)
             continue
 
         if word.isalpha():        
@@ -271,12 +278,12 @@ def start_game():
                         print_coloured_text(YELLOW, "\nSprangram!")
                         print_coloured_text(WHITE, "", True)
                         # Add sprangram path with yellow color
-                        path = check_word_on_grid(list(word), grid)
+                        path = check_word_on_grid(word, grid)
                         if path:
                             found_paths.append((path, YELLOW))
                     else:
                         # Add theme word path with blue color
-                        path = check_word_on_grid(list(word), grid)
+                        path = check_word_on_grid(word, grid)
                         if path:
                             found_paths.append((path, BLUE))
                     
@@ -292,7 +299,7 @@ def start_game():
                         playing = False
                         
                 else:
-                    path = check_word_on_grid(list(word), grid)
+                    path = check_word_on_grid(word, grid)
                     if path:
                         print("Word is on grid")
                         if check_word_valid(word):
