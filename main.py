@@ -247,9 +247,6 @@ def start_game():
             if hints > 0:
                 hints -= 1
                 sorted_words = sorted(theme_words, key=len)
-                for word in sorted_words:
-                    if word in words_found:
-                        sorted_words.remove(word)
                 hint_word = sorted_words[0]
                 path = check_word_on_grid(hint_word, grid)
                 if path:
