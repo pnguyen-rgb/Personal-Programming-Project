@@ -12,6 +12,7 @@ YELLOW = Fore.YELLOW
 WHITE = Fore.WHITE
 BLUE = Fore.BLUE
 RESET = Style.RESET_ALL
+WORDS_REQUIRED_FOR_HINT = 3
 
 def print_coloured_text(colour, text, end=False):
     if end:
@@ -38,7 +39,7 @@ def is_theme_word(word, theme_words):
         theme_words.remove(word_upper)
         return True
     return False
-
+    
 def check_word_valid(word):
     word = word.lower()
     freq = zipf_frequency(word, "en")
@@ -125,25 +126,25 @@ def build_visual_grid(grid, found_paths):
                 for step in range(1, steps):
                     vr = vr1 + step
                     vc = vc1 + step
-                    visual[vr][vc] = color + "/" + RESET
+                    visual[vr][vc] = color + "\\" + RESET
             elif dr > 0 and dc < 0:  # Down-left diagonal
                 steps = abs(dr)
                 for step in range(1, steps):
                     vr = vr1 + step
                     vc = vc1 - step
-                    visual[vr][vc] = color + "\\" + RESET
+                    visual[vr][vc] = color + "/" + RESET
             elif dr < 0 and dc > 0:  # Up-right diagonal
                 steps = abs(dr)
                 for step in range(1, steps):
                     vr = vr1 - step
                     vc = vc1 + step
-                    visual[vr][vc] = color + "\\" + RESET
+                    visual[vr][vc] = color + "/" + RESET
             elif dr < 0 and dc < 0:  # Up-left diagonal
                 steps = abs(dr)
                 for step in range(1, steps):
                     vr = vr1 - step
                     vc = vc1 - step
-                    visual[vr][vc] = color + "/" + RESET
+                    visual[vr][vc] = color + "\\" + RESET
     
     # Convert visual grid to string and clean up extra spaces
     result = []
@@ -229,6 +230,8 @@ def start_game():
     sprangram = find_sprangram(theme_words)
     grid = generate_grid(grid_lines)
     found_paths = []
+    words_until_next_hint = 3
+    hints = 0
 
     while playing:
         clear_screen()
@@ -237,7 +240,21 @@ def start_game():
         print("Theme:", theme)
         print(f"{score} of {num_words} theme words found\n")
         
-        word = input("Enter a combination of adjacent letters from the grid: ").upper().replace(" ", "")
+        word = input("Enter a combination of adjacent letters from the grid: (enter ? for a hint) ").upper().replace(" ", "")
+        if word == "?":
+            if hints > 0:
+                hints -= 1
+                sorted_words = sorted(theme_words, key=len)
+                for word in sorted_words:
+                    if word in words_found:
+                        sorted_words.remove(word)
+                hint_word = sorted_words[0]
+                print(f"A theme word is {hint_word}. Enter it onto the grid")
+                
+            else:
+                print("You don't have enough hints!")
+            time.sleep(3)
+            continue
 
         if word.isalpha():        
             if len(word) < 4:
@@ -282,6 +299,14 @@ def start_game():
                             print("Word is valid")
                             words_found.append(word)
                             print_coloured_text(WHITE, f"\nNon-theme word found: {word}")
+                            words_until_next_hint -= 1
+                            print(f"Words until next hint: {words_until_next_hint}")
+                            if words_until_next_hint == 0:
+                                hints += 1
+                                words_until_next_hint = 3
+                            print(f"Hints: {hints}")
+
+                            print()
                             time.sleep(1.5)
                         else:
                             print("That doesn't look like a valid English word. Try again.")
