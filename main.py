@@ -257,6 +257,7 @@ def start_game():
                 
             else:
                 print("You don't have enough hints!")
+                print(f"You need to find {words_until_next_hint} more non-theme words for a hint")
                 time.sleep(3)
             continue
 
